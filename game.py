@@ -13,7 +13,6 @@ pygame.display.set_icon(icon)
 
 background = pygame.image.load('images/fonz.jpg').convert()
 zombe = pygame.image.load('images/zombi.png').convert_alpha()
-zombe_x = 1500
 zombe_list_in_game = []
 
 player = [
@@ -39,12 +38,17 @@ player_speed = 10
 player_x = 100
 player_y = 450
 is_jamp = False
-jump_count = 12
+jump_count = 15
 bg_m = pygame.mixer.Sound('music/mz.mp3')
 bg_m.play()
 zombe_timer = pygame.USEREVENT + 1
-pygame.time.set_timer(zombe_timer, 2500)
+pygame.time.set_timer(zombe_timer, 6500)
 
+label = pygame.font.Font('Fonts/PlaypenSans-ExtraBold.ttf',100)
+lose_label = label.render('You loose!', False, (60, 171, 199))
+restart_label = label.render('New game', False, (60, 171, 199))
+restart_label_rect = restart_label.get_rect(topleft=(500,500))
+gameplay = True
 running = True
 while running:
 
@@ -53,54 +57,69 @@ while running:
     screen.blit(background, (bg_x,0))
     screen.blit(background,(bg_x+1440,0))
 
-    player_sq = player[0].get_rect(topleft=(player_x,player_y))
-    zombe_sq = zombe.get_rect(topleft=(zombe_x,650))
 
-    if zombe_list_in_game:
-        for el in zombe_list_in_game:
-            screen.blit(zombe, el)
-            el.x -= 20
+    if gameplay:
+        player_sq = player[0].get_rect(topleft=(player_x,player_y))
 
-            if player_sq.colliderect(zombe_sq):
-                print("You lose")
+        if zombe_list_in_game:
+            for (i,el) in enumerate(zombe_list_in_game):
+                screen.blit(zombe, el)
+                el.x -= 10
+                if el.x < -10:
+                    zombe_list_in_game.pop(i)
 
-    screen.blit(player[player_count], (player_x, player_y))
+                if player_sq.colliderect(el):
+                    gameplay = False
 
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_LEFT] and player_x > 50:
-        player_x -= player_speed
-    elif keys[pygame.K_RIGHT] and player_x < 1200:
-        player_x += player_speed
+        screen.blit(player[player_count], (player_x, player_y))
 
-    if not is_jamp:
-        if keys[pygame.K_SPACE]:
-            is_jamp = True
-    else:
-        if jump_count >=-12:
-            if jump_count>0:
-                player_y -= (jump_count**2)/2
-            else:
-                player_y += (jump_count**2)/2
-            jump_count -=1
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LEFT]:
+            screen.blit(player[player_count], (player_x, player_y))
+        if keys[pygame.K_LEFT] and player_x > 50:
+            player_x -= player_speed
+        elif keys[pygame.K_RIGHT] and player_x < 1200:
+            player_x += player_speed
+
+        if not is_jamp:
+            if keys[pygame.K_SPACE]:
+                is_jamp = True
         else:
-            is_jamp = False
-            jump_count = 12
-    if player_count == 14:
-        player_count = 0
+            if jump_count >=-15:
+                if jump_count>0:
+                    player_y -= (jump_count**2)/2
+                else:
+                    player_y += (jump_count**2)/2
+                jump_count -=1
+            else:
+                is_jamp = False
+                jump_count = 15
+        if player_count == 14:
+            player_count = 0
+        else:
+            player_count +=1
+
+        bg_x -= 2
+        if bg_x == -1440:
+            bg_x = 0
+
+
     else:
-        player_count +=1
+        screen.fill((23, 20, 46))
+        screen.blit(lose_label, (500,300))
+        screen.blit(restart_label, (restart_label_rect))
+        mouse = pygame.mouse.get_pos()
+        if restart_label_rect.collidepoint(mouse) and pygame.mouse.get_pressed()[0]:
+            gameplay=True
+            player_x = 100
+            zombe_list_in_game.clear()
 
-    bg_x -= 2
-    if bg_x == -1440:
-        bg_x = 0
 
-
-    zombe_x -= 30
     pygame.display.update()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
             pygame.quit()
         if event.type == zombe_timer:
-            zombe_list_in_game.append(zombe.get_rect(topleft= (1500,670)))
-    clock.tick(22)
+            zombe_list_in_game.append(zombe.get_rect(topleft= (1450,680)))
+    clock.tick(21)
