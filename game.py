@@ -103,4 +103,4 @@ while running:
             pygame.quit()
         if event.type == zombe_timer:
             zombe_list_in_game.append(zombe.get_rect(topleft= (1500,670)))
-    clock.tick(20)
+    clock.tick(21)
