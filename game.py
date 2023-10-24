@@ -42,12 +42,15 @@ jump_count = 15
 bg_m = pygame.mixer.Sound('music/mz.mp3')
 bg_m.play()
 zombe_timer = pygame.USEREVENT + 1
-pygame.time.set_timer(zombe_timer, 6500)
+pygame.time.set_timer(zombe_timer, 5500)
 
 label = pygame.font.Font('Fonts/PlaypenSans-ExtraBold.ttf',100)
 lose_label = label.render('You loose!', False, (60, 171, 199))
 restart_label = label.render('New game', False, (60, 171, 199))
 restart_label_rect = restart_label.get_rect(topleft=(500,500))
+bullet = pygame.image.load('images/luk.png').convert_alpha()
+bullets = []
+bullets_left = 5
 gameplay = True
 running = True
 while running:
@@ -103,7 +106,17 @@ while running:
         if bg_x == -1440:
             bg_x = 0
 
-
+        if bullets:
+            for (i,el) in enumerate(bullets):
+                screen.blit(bullet, (el.x, el.y))
+                el.x += 4
+                if el.x > 1440:
+                    bullets.pop(i)
+                if zombe_list_in_game:
+                    for(index, zombe_el) in enumerate(zombe_list_in_game):
+                        if el.colliderect(zombe_el):
+                            zombe_list_in_game.pop(index)
+                            bullets.pop(i)
     else:
         screen.fill((23, 20, 46))
         screen.blit(lose_label, (500,300))
@@ -113,6 +126,8 @@ while running:
             gameplay=True
             player_x = 100
             zombe_list_in_game.clear()
+            bullets.clear()
+            bullets_left = 5
 
 
     pygame.display.update()
@@ -122,4 +137,7 @@ while running:
             pygame.quit()
         if event.type == zombe_timer:
             zombe_list_in_game.append(zombe.get_rect(topleft= (1450,680)))
+        if gameplay and event.type == pygame.KEYUP and event.key == pygame.K_b and bullets_left>0:
+            bullets.append(bullet.get_rect(topleft=(player_x+130, player_y+250)))
+            bullets_left -=1
     clock.tick(21)
